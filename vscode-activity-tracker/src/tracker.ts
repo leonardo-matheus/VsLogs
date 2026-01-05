@@ -238,6 +238,10 @@ export class ActivityTracker {
         return userId;
     }
 
+    public getUserIdPublic(): string {
+        return this.getUserId();
+    }
+
     private postData(url: string, data: any): Promise<void> {
         return new Promise((resolve, reject) => {
             const postData = JSON.stringify(data);

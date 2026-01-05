@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Tracker Dashboard</title>
+    <title>VsLogs - Activity Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -16,6 +16,160 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Token Input Screen */
+        .token-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .token-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .token-card .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .token-card h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .token-card p {
+            color: #8892b0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .token-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .token-input-group input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .token-input-group input:focus {
+            border-color: #00d9ff;
+        }
+
+        .token-input-group input::placeholder {
+            color: #8892b0;
+        }
+
+        .token-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            border: none;
+            border-radius: 10px;
+            color: #1a1a2e;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .token-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .token-help {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .token-help h3 {
+            font-size: 1em;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+
+        .token-help ol {
+            text-align: left;
+            color: #8892b0;
+            padding-left: 20px;
+        }
+
+        .token-help li {
+            margin-bottom: 8px;
+        }
+
+        .token-error {
+            background: rgba(248, 81, 73, 0.2);
+            border: 1px solid #f85149;
+            color: #f85149;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Dashboard visibility */
+        .dashboard-container {
+            display: none;
+        }
+
+        .dashboard-container.visible {
+            display: block;
+        }
+
+        .token-screen.hidden {
+            display: none;
+        }
+
+        /* Current token display */
+        .current-token-bar {
+            background: rgba(0, 217, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .current-token-bar .token-display {
+            font-family: monospace;
+            color: #00d9ff;
+        }
+
+        .current-token-bar .change-token {
+            color: #8892b0;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .current-token-bar .change-token:hover {
             color: #fff;
         }
 
@@ -359,31 +513,64 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>⚡ Activity Tracker</h1>
-            <p>Monitore seu tempo de codificação em tempo real</p>
-            <div class="status-indicator">
-                <div class="status-dot"></div>
-                <span id="connection-status">Conectado</span>
+    <!-- Token Input Screen -->
+    <div class="token-screen" id="tokenScreen">
+        <div class="token-card">
+            <div class="logo">📊</div>
+            <h1>VsLogs Dashboard</h1>
+            <p>Para visualizar suas estatísticas de codificação, insira seu token de compartilhamento.</p>
+            
+            <div class="token-error" id="tokenError">Token inválido ou sem dados. Verifique e tente novamente.</div>
+            
+            <div class="token-input-group">
+                <input type="text" id="tokenInput" placeholder="Cole seu token aqui..." autocomplete="off">
+                <button class="token-btn" onclick="loadDashboard()">Acessar</button>
             </div>
-        </header>
 
-        <div class="tabs">
-            <button class="tab active" data-period="today">Hoje</button>
-            <button class="tab" data-period="week">Semana</button>
-            <button class="tab" data-period="month">Mês</button>
+            <div class="token-help">
+                <h3>🔑 Como obter seu token?</h3>
+                <ol>
+                    <li>Abra o VS Code com a extensão VsLogs instalada</li>
+                    <li>Clique no ícone do VsLogs na barra lateral</li>
+                    <li>Copie o token exibido ou clique em "Copiar Token"</li>
+                    <li>Cole o token acima e clique em Acessar</li>
+                </ol>
+            </div>
         </div>
+    </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="icon">💻</div>
-                <div class="value" id="active-time">0h 0m</div>
-                <div class="label">Tempo Ativo</div>
+    <!-- Dashboard Container -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <div class="current-token-bar">
+            <span>🔑 Token: <span class="token-display" id="currentTokenDisplay"></span></span>
+            <a class="change-token" onclick="changeToken()">Trocar token</a>
+        </div>
+        
+        <div class="container">
+            <header>
+                <h1>⚡ VsLogs Dashboard</h1>
+                <p>Monitore seu tempo de codificação em tempo real</p>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="connection-status">Conectado</span>
+                </div>
+            </header>
+
+            <div class="tabs">
+                <button class="tab active" data-period="today">Hoje</button>
+                <button class="tab" data-period="week">Semana</button>
+                <button class="tab" data-period="month">Mês</button>
             </div>
-            <div class="stat-card">
-                <div class="icon">😴</div>
-                <div class="value" id="afk-time">0h 0m</div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon">💻</div>
+                    <div class="value" id="active-time">0h 0m</div>
+                    <div class="label">Tempo Ativo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">😴</div>
+                    <div class="value" id="afk-time">0h 0m</div>
                 <div class="label">Tempo AFK</div>
             </div>
             <div class="stat-card">
@@ -454,15 +641,110 @@
         </div>
 
         <footer>
-            <p>Activity Tracker Dashboard &copy; 2026</p>
+            <p>VsLogs Dashboard &copy; 2026</p>
         </footer>
-    </div>
+        </div> <!-- close container -->
+    </div> <!-- close dashboard-container -->
 
     <script>
         const API_BASE = '/vslogs/api';
         let currentPeriod = 'today';
         let activityChart = null;
         let languagesChart = null;
+        let currentToken = null;
+
+        // Verificar token na URL ou localStorage
+        function checkToken() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = urlParams.get('token');
+            const savedToken = localStorage.getItem('vslogs_token');
+            
+            if (urlToken) {
+                currentToken = urlToken;
+                localStorage.setItem('vslogs_token', urlToken);
+                showDashboard();
+            } else if (savedToken) {
+                currentToken = savedToken;
+                document.getElementById('tokenInput').value = savedToken;
+                showDashboard();
+            } else {
+                showTokenScreen();
+            }
+        }
+
+        function showTokenScreen() {
+            document.getElementById('tokenScreen').classList.remove('hidden');
+            document.getElementById('dashboardContainer').classList.remove('visible');
+        }
+
+        function showDashboard() {
+            document.getElementById('tokenScreen').classList.add('hidden');
+            document.getElementById('dashboardContainer').classList.add('visible');
+            document.getElementById('currentTokenDisplay').textContent = currentToken;
+            
+            // Atualizar URL sem recarregar
+            const url = new URL(window.location);
+            url.searchParams.set('token', currentToken);
+            window.history.replaceState({}, '', url);
+            
+            // Iniciar carregamento de dados
+            initDashboard();
+        }
+
+        function loadDashboard() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (!token) {
+                showError('Por favor, insira um token válido.');
+                return;
+            }
+            
+            currentToken = token;
+            localStorage.setItem('vslogs_token', token);
+            
+            // Verificar se o token tem dados
+            fetch(`${API_BASE}/stats.php?period=today&user_id=${encodeURIComponent(token)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        hideError();
+                        showDashboard();
+                    } else {
+                        showError('Erro ao carregar dados. Verifique o token.');
+                    }
+                })
+                .catch(() => {
+                    // Mesmo com erro, tenta mostrar (pode ser primeiro acesso)
+                    hideError();
+                    showDashboard();
+                });
+        }
+
+        function changeToken() {
+            localStorage.removeItem('vslogs_token');
+            currentToken = null;
+            showTokenScreen();
+            document.getElementById('tokenInput').value = '';
+            
+            // Limpar URL
+            const url = new URL(window.location);
+            url.searchParams.delete('token');
+            window.history.replaceState({}, '', url);
+        }
+
+        function showError(msg) {
+            const errorEl = document.getElementById('tokenError');
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('tokenError').style.display = 'none';
+        }
+
+        // Enter para enviar
+        document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') loadDashboard();
+        });
 
         // Cores para linguagens
         const languageColors = {
@@ -521,8 +803,9 @@
 
         // Buscar estatísticas
         async function fetchStats(period) {
+            if (!currentToken) return;
             try {
-                const response = await fetch(`${API_BASE}/stats.php?period=${period}`);
+                const response = await fetch(`${API_BASE}/stats.php?period=${period}&user_id=${encodeURIComponent(currentToken)}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -536,8 +819,9 @@
 
         // Buscar dados em tempo real
         async function fetchRealtime() {
+            if (!currentToken) return;
             try {
-                const response = await fetch(`${API_BASE}/stats.php?period=realtime`);
+                const response = await fetch(`${API_BASE}/stats.php?period=realtime&user_id=${encodeURIComponent(currentToken)}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -816,18 +1100,27 @@
             });
         });
 
-        // Inicialização
-        fetchStats(currentPeriod);
-        fetchRealtime();
+        // Inicialização do dashboard
+        function initDashboard() {
+            fetchStats(currentPeriod);
+            fetchRealtime();
+        }
 
         // Atualizar a cada 30 segundos
         setInterval(() => {
-            fetchStats(currentPeriod);
-            fetchRealtime();
+            if (currentToken) {
+                fetchStats(currentPeriod);
+                fetchRealtime();
+            }
         }, 30000);
 
         // Atualizar tempo real a cada 10 segundos
-        setInterval(fetchRealtime, 10000);
+        setInterval(() => {
+            if (currentToken) fetchRealtime();
+        }, 10000);
+
+        // Verificar token ao carregar
+        checkToken();
     </script>
 </body>
 </html>

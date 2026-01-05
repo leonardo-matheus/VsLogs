@@ -37,11 +37,15 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const tracker_1 = require("./tracker");
+const sidebarProvider_1 = require("./sidebarProvider");
 let tracker;
 function activate(context) {
     console.log('Activity Tracker is now active!');
     tracker = new tracker_1.ActivityTracker(context);
     tracker.start();
+    // Registrar sidebar
+    const sidebarProvider = new sidebarProvider_1.SidebarProvider(context.extensionUri, tracker);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider(sidebarProvider_1.SidebarProvider.viewType, sidebarProvider));
     // Comando para mostrar status
     const showStatusCommand = vscode.commands.registerCommand('activityTracker.showStatus', () => {
         const status = tracker.getStatus();
@@ -49,14 +53,21 @@ function activate(context) {
             `😴 Tempo AFK: ${formatTime(status.afkTime)} | ` +
             `Status: ${status.isAfk ? 'AFK' : 'Ativo'}`);
     });
-    // Comando para abrir dashboard
+    // Comando para abrir dashboard com token
     const openDashboardCommand = vscode.commands.registerCommand('activityTracker.openDashboard', () => {
         const config = vscode.workspace.getConfiguration('activityTracker');
-        const endpoint = config.get('apiEndpoint', 'http://localhost:8080/api');
-        const dashboardUrl = endpoint.replace('/api', '/dashboard.html');
+        const endpoint = config.get('apiEndpoint', 'https://191-235-32-212.nip.io/vslogs/api');
+        const userId = tracker.getUserIdPublic();
+        const dashboardUrl = endpoint.replace('/api', '') + '?token=' + encodeURIComponent(userId);
         vscode.env.openExternal(vscode.Uri.parse(dashboardUrl));
     });
-    context.subscriptions.push(showStatusCommand, openDashboardCommand);
+    // Comando para copiar token
+    const copyTokenCommand = vscode.commands.registerCommand('activityTracker.copyToken', async () => {
+        const userId = tracker.getUserIdPublic();
+        await vscode.env.clipboard.writeText(userId);
+        vscode.window.showInformationMessage(`🔑 Token copiado: ${userId}`);
+    });
+    context.subscriptions.push(showStatusCommand, openDashboardCommand, copyTokenCommand);
     // Status bar
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.command = 'activityTracker.showStatus';

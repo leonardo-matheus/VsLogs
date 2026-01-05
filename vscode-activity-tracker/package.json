@@ -2,7 +2,7 @@
   "name": "vscode-activity-tracker",
   "displayName": "VsLogs - Activity Tracker",
   "description": "Monitor your coding time, detect AFK periods, track lines typed and languages used. View real-time statistics in a beautiful dashboard.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "leonardomatheus",
   "author": {
     "name": "Leonardo Matheus"
@@ -44,6 +44,24 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vslogs-sidebar",
+          "title": "VsLogs",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vslogs-sidebar": [
+        {
+          "type": "webview",
+          "id": "vslogs.statsView",
+          "name": "Activity Stats"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "activityTracker.showStatus",
@@ -51,9 +69,29 @@
       },
       {
         "command": "activityTracker.openDashboard",
-        "title": "Activity Tracker: Open Dashboard"
+        "title": "Activity Tracker: Open Dashboard",
+        "icon": "$(link-external)"
+      },
+      {
+        "command": "activityTracker.copyToken",
+        "title": "Activity Tracker: Copy Share Token",
+        "icon": "$(copy)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "activityTracker.openDashboard",
+          "when": "view == vslogs.statsView",
+          "group": "navigation"
+        },
+        {
+          "command": "activityTracker.copyToken",
+          "when": "view == vslogs.statsView",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "Activity Tracker",
       "properties": {

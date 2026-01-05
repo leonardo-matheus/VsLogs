@@ -207,6 +207,9 @@ class ActivityTracker {
         }
         return userId;
     }
+    getUserIdPublic() {
+        return this.getUserId();
+    }
     postData(url, data) {
         return new Promise((resolve, reject) => {
             const postData = JSON.stringify(data);
