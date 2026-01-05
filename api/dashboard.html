@@ -163,14 +163,41 @@
             color: #00d9ff;
         }
 
+        .current-token-bar .token-actions {
+            display: flex;
+            gap: 20px;
+        }
+
+        .current-token-bar .share-link,
         .current-token-bar .change-token {
             color: #8892b0;
             text-decoration: none;
             cursor: pointer;
+            transition: color 0.2s;
         }
 
+        .current-token-bar .share-link:hover,
         .current-token-bar .change-token:hover {
-            color: #fff;
+            color: #00ff88;
+        }
+
+        .copy-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copy-toast.show {
+            opacity: 1;
         }
 
         .container {
@@ -543,7 +570,10 @@
     <div class="dashboard-container" id="dashboardContainer">
         <div class="current-token-bar">
             <span>🔑 Token: <span class="token-display" id="currentTokenDisplay"></span></span>
-            <a class="change-token" onclick="changeToken()">Trocar token</a>
+            <div class="token-actions">
+                <a class="share-link" onclick="copyShareLink()">📋 Copiar Link</a>
+                <a class="change-token" onclick="changeToken()">🔄 Trocar token</a>
+            </div>
         </div>
         
         <div class="container">
@@ -739,6 +769,37 @@
             const url = new URL(window.location);
             url.searchParams.delete('token');
             window.history.replaceState({}, '', url);
+        }
+
+        function copyShareLink() {
+            const shareUrl = `${window.location.origin}/vslogs/?token=${encodeURIComponent(currentToken)}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast('✅ Link copiado para a área de transferência!');
+            }).catch(() => {
+                // Fallback para navegadores antigos
+                const input = document.createElement('input');
+                input.value = shareUrl;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast('✅ Link copiado para a área de transferência!');
+            });
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById('copyToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'copyToast';
+                toast.className = 'copy-toast';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
         }
 
         function showError(msg) {
