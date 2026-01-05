@@ -65,20 +65,34 @@ function getTodayStats(PDO $db, ?string $userId): array {
     $whereClause = $userId ? 'AND user_id = ?' : '';
     $params = $userId ? [$date, $userId] : [$date];
     
-    // Buscar todas as atividades de hoje para agregar linguagens
+    // Buscar atividades de hoje agrupadas por workspace (pegar o maior valor)
     $stmt = $db->prepare("
         SELECT 
             workspace,
             MAX(active_time) as active_time,
             MAX(afk_time) as afk_time,
             MAX(lines_typed) as lines_typed,
-            languages,
-            hourly_activity
+            (SELECT languages FROM activities a2 
+             WHERE a2.workspace = activities.workspace 
+             AND a2.date = activities.date 
+             " . ($userId ? "AND a2.user_id = ?" : "") . "
+             ORDER BY a2.timestamp DESC LIMIT 1) as languages,
+            (SELECT hourly_activity FROM activities a3 
+             WHERE a3.workspace = activities.workspace 
+             AND a3.date = activities.date 
+             " . ($userId ? "AND a3.user_id = ?" : "") . "
+             ORDER BY a3.timestamp DESC LIMIT 1) as hourly_activity
         FROM activities 
         WHERE date = ? $whereClause
         GROUP BY workspace
     ");
-    $stmt->execute($params);
+    
+    // Ajustar parâmetros para as subqueries
+    if ($userId) {
+        $stmt->execute([$userId, $userId, $date, $userId]);
+    } else {
+        $stmt->execute([$date]);
+    }
     $activities = $stmt->fetchAll();
 
     // Agregar dados

@@ -39,21 +39,24 @@ try {
         $languages = json_encode($input['languages'] ?? []);
         $hourlyActivity = json_encode($input['hourly_activity'] ?? []);
 
-        // Inserir ou atualizar atividade
+        // Criar chave única: user_id + workspace + date
+        $uniqueKey = $userId . '_' . md5($workspace) . '_' . $date;
+
+        // Inserir ou atualizar atividade (agrupado por user+workspace+date)
         $stmt = $db->prepare('
             INSERT INTO activities 
             (user_id, session_id, active_time, afk_time, is_active, workspace, timestamp, date, lines_typed, languages, hourly_activity)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(session_id) DO UPDATE SET
-                active_time = excluded.active_time,
-                afk_time = excluded.afk_time,
+                active_time = MAX(activities.active_time, excluded.active_time),
+                afk_time = MAX(activities.afk_time, excluded.afk_time),
                 is_active = excluded.is_active,
                 timestamp = excluded.timestamp,
-                lines_typed = excluded.lines_typed,
+                lines_typed = MAX(activities.lines_typed, excluded.lines_typed),
                 languages = excluded.languages,
                 hourly_activity = excluded.hourly_activity
         ');
-        $stmt->execute([$userId, $sessionId, $activeTime, $afkTime, $isActive, $workspace, $timestamp, $date, $linesTyped, $languages, $hourlyActivity]);
+        $stmt->execute([$userId, $uniqueKey, $activeTime, $afkTime, $isActive, $workspace, $timestamp, $date, $linesTyped, $languages, $hourlyActivity]);
 
         // Atualizar resumo diário
         $stmt = $db->prepare('
