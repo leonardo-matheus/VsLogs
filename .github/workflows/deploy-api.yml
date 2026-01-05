@@ -1,0 +1,39 @@
+name: Deploy VsLogs API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+  workflow_dispatch: # Permite deploy manual
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to VPS
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 191.235.32.212
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/vslogs-api
+            git fetch origin main
+            git reset --hard origin/main
+            chown -R www-data:www-data /var/www/vslogs-api
+            chmod -R 755 /var/www/vslogs-api
+            chmod -R 775 /var/www/vslogs-api/api/data
+            systemctl restart php8.2-fpm
+            echo "✅ Deploy concluído: $(date)"
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -f http://191.235.32.212/api/ || exit 1
+          echo "✅ API está respondendo!"

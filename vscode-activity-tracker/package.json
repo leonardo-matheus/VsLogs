@@ -1,11 +1,11 @@
 {
   "name": "vscode-activity-tracker",
-  "displayName": "Activity Tracker",
-  "description": "📊 Monitor your coding time, detect AFK periods, track lines typed and languages used. View real-time statistics in a beautiful dashboard.",
+  "displayName": "VsLogs - Activity Tracker",
+  "description": "Monitor your coding time, detect AFK periods, track lines typed and languages used. View real-time statistics in a beautiful dashboard.",
   "version": "1.0.0",
-  "publisher": "activity-tracker",
+  "publisher": "leonardomatheus",
   "author": {
-    "name": "Activity Tracker Team"
+    "name": "Leonardo Matheus"
   },
   "license": "MIT",
   "icon": "images/icon.png",
@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/seu-usuario/activity-tracker"
+    "url": "https://github.com/leonardo-matheus/VsLogs"
   },
   "bugs": {
-    "url": "https://github.com/seu-usuario/activity-tracker/issues"
+    "url": "https://github.com/leonardo-matheus/VsLogs/issues"
   },
-  "homepage": "https://github.com/seu-usuario/activity-tracker#readme",
+  "homepage": "https://github.com/leonardo-matheus/VsLogs#readme",
   "keywords": [
     "productivity",
     "time tracking",
@@ -33,7 +33,7 @@
     "metrics"
   ],
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "1.80.0"
   },
   "categories": [
     "Other",
