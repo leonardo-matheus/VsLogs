@@ -657,11 +657,13 @@
         function checkToken() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlToken = urlParams.get('token');
-            const savedToken = localStorage.getItem('vslogs_token');
+            // Token com expiração de 30 dias
+            const tokenData = JSON.parse(localStorage.getItem('vslogs_token_data') || 'null');
+            const savedToken = tokenData && (Date.now() < tokenData.expires) ? tokenData.token : null;
             
             if (urlToken) {
                 currentToken = urlToken;
-                localStorage.setItem('vslogs_token', urlToken);
+                saveTokenWithExpiry(urlToken);
                 showDashboard();
             } else if (savedToken) {
                 currentToken = savedToken;
@@ -670,6 +672,14 @@
             } else {
                 showTokenScreen();
             }
+        }
+
+        function saveTokenWithExpiry(token) {
+            const data = {
+                token: token,
+                expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 dias
+            };
+            localStorage.setItem('vslogs_token_data', JSON.stringify(data));
         }
 
         function showTokenScreen() {
@@ -699,7 +709,7 @@
             }
             
             currentToken = token;
-            localStorage.setItem('vslogs_token', token);
+            saveTokenWithExpiry(token);
             
             // Verificar se o token tem dados
             fetch(`${API_BASE}/stats.php?period=today&user_id=${encodeURIComponent(token)}`)
@@ -720,7 +730,7 @@
         }
 
         function changeToken() {
-            localStorage.removeItem('vslogs_token');
+            localStorage.removeItem('vslogs_token_data');
             currentToken = null;
             showTokenScreen();
             document.getElementById('tokenInput').value = '';
