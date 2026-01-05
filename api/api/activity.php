@@ -7,7 +7,7 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -20,23 +20,14 @@ try {
     $db = Database::getInstance();
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Receber dados de atividade
         $input = json_decode(file_get_contents('php://input'), true);
         
         if (!$input) {
             throw new Exception('Invalid JSON input');
         }
 
-        // Autenticar por token
-        $token = $input['token'] ?? '';
-        $user = null;
-        
-        if ($token) {
-            $stmt = $db->prepare('SELECT id, public_id, name FROM users WHERE token = ?');
-            $stmt->execute([$token]);
-            $user = $stmt->fetch();
-        }
-
-        $userId = $user ? $user['public_id'] : ($input['user_id'] ?? 'anonymous');
+        $userId = $input['user_id'] ?? '';
         $sessionId = $input['session_id'] ?? '';
         $activeTime = (int)($input['active_time'] ?? 0);
         $afkTime = (int)($input['afk_time'] ?? 0);
@@ -91,36 +82,30 @@ try {
         ]);
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $publicId = $_GET['id'] ?? $_GET['user_id'] ?? null;
+        // Retornar atividade atual
+        $userId = $_GET['user_id'] ?? null;
         
-        if ($publicId) {
+        if ($userId) {
             $stmt = $db->prepare('
                 SELECT * FROM activities 
                 WHERE user_id = ? 
                 ORDER BY timestamp DESC 
-                LIMIT 10
+                LIMIT 1
             ');
-            $stmt->execute([$publicId]);
-            $activities = $stmt->fetchAll();
-            
-            // Buscar info do usuário
-            $stmt = $db->prepare('SELECT name, public_id FROM users WHERE public_id = ?');
-            $stmt->execute([$publicId]);
-            $userInfo = $stmt->fetch();
+            $stmt->execute([$userId]);
+            $activity = $stmt->fetch();
         } else {
             $stmt = $db->query('
                 SELECT * FROM activities 
                 ORDER BY timestamp DESC 
                 LIMIT 10
             ');
-            $activities = $stmt->fetchAll();
-            $userInfo = null;
+            $activity = $stmt->fetchAll();
         }
 
         echo json_encode([
             'success' => true,
-            'user' => $userInfo,
-            'data' => $activities
+            'data' => $activity
         ]);
     }
 

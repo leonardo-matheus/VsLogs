@@ -25,20 +25,6 @@ class Database {
 
     private static function createTables(): void {
         $db = self::$instance;
-
-        // Tabela de usuários
-        $db->exec('
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                name TEXT,
-                token TEXT UNIQUE,
-                public_id TEXT UNIQUE,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                last_login DATETIME
-            )
-        ');
         
         // Tabela de atividades
         $db->exec('
@@ -81,7 +67,5 @@ class Database {
         $db->exec('CREATE INDEX IF NOT EXISTS idx_activities_user_date ON activities(user_id, date)');
         $db->exec('CREATE INDEX IF NOT EXISTS idx_activities_timestamp ON activities(timestamp)');
         $db->exec('CREATE INDEX IF NOT EXISTS idx_daily_summary_user_date ON daily_summary(user_id, date)');
-        $db->exec('CREATE INDEX IF NOT EXISTS idx_users_token ON users(token)');
-        $db->exec('CREATE INDEX IF NOT EXISTS idx_users_public_id ON users(public_id)');
     }
 }

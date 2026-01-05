@@ -1,14 +1,43 @@
 {
   "name": "vscode-activity-tracker",
-  "displayName": "VS Code Activity Tracker",
-  "description": "Monitora tempo de codificação, detecta AFK e envia dados para dashboard",
+  "displayName": "Activity Tracker",
+  "description": "📊 Monitor your coding time, detect AFK periods, track lines typed and languages used. View real-time statistics in a beautiful dashboard.",
   "version": "1.0.0",
   "publisher": "activity-tracker",
+  "author": {
+    "name": "Activity Tracker Team"
+  },
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/activity-tracker"
+  },
+  "bugs": {
+    "url": "https://github.com/seu-usuario/activity-tracker/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/activity-tracker#readme",
+  "keywords": [
+    "productivity",
+    "time tracking",
+    "activity",
+    "coding time",
+    "statistics",
+    "dashboard",
+    "afk",
+    "languages",
+    "metrics"
+  ],
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Visualization"
   ],
   "activationEvents": [
     "onStartupFinished"

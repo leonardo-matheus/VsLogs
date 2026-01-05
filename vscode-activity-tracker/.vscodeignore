@@ -1,0 +1,15 @@
+.vscode/**
+.vscode-test/**
+src/**
+.gitignore
+.yarnrc
+vsc-extension-quickstart.md
+**/tsconfig.json
+**/.eslintrc.json
+**/*.map
+**/*.ts
+node_modules/**
+!node_modules/node-fetch/**
+!node_modules/tr46/**
+!node_modules/webidl-conversions/**
+!node_modules/whatwg-url/**
