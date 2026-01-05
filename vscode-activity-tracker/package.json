@@ -1,0 +1,63 @@
+{
+  "name": "vscode-activity-tracker",
+  "displayName": "VS Code Activity Tracker",
+  "description": "Monitora tempo de codificação, detecta AFK e envia dados para dashboard",
+  "version": "1.0.0",
+  "publisher": "activity-tracker",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "activityTracker.showStatus",
+        "title": "Activity Tracker: Show Status"
+      },
+      {
+        "command": "activityTracker.openDashboard",
+        "title": "Activity Tracker: Open Dashboard"
+      }
+    ],
+    "configuration": {
+      "title": "Activity Tracker",
+      "properties": {
+        "activityTracker.apiEndpoint": {
+          "type": "string",
+          "default": "http://localhost:8000/api",
+          "description": "URL do endpoint da API"
+        },
+        "activityTracker.afkTimeout": {
+          "type": "number",
+          "default": 300,
+          "description": "Tempo em segundos para considerar AFK (padrão: 300 = 5 minutos)"
+        },
+        "activityTracker.syncInterval": {
+          "type": "number",
+          "default": 30,
+          "description": "Intervalo em segundos para sincronizar com a API"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
