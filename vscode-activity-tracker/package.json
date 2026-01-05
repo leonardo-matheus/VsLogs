@@ -2,7 +2,7 @@
   "name": "vscode-activity-tracker",
   "displayName": "VsLogs - Activity Tracker",
   "description": "Monitor your coding time, detect AFK periods, track lines typed and languages used. View real-time statistics in a beautiful dashboard.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "leonardomatheus",
   "author": {
     "name": "Leonardo Matheus"
@@ -59,7 +59,7 @@
       "properties": {
         "activityTracker.apiEndpoint": {
           "type": "string",
-          "default": "http://localhost:8000/api",
+          "default": "https://191-235-32-212.nip.io/vslogs/api",
           "description": "URL do endpoint da API"
         },
         "activityTracker.afkTimeout": {

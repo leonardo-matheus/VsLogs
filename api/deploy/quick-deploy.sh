@@ -50,37 +50,93 @@ pm.min_spare_servers = 1
 pm.max_spare_servers = 3
 EOF
 
-# Configurar Nginx
-cat > /etc/nginx/sites-available/vslogs-api << 'EOF'
-server {
-    listen 80;
-    server_name 191-235-32-212.nip.io 191.235.32.212;
-    root /var/www/vslogs-api/api;
-    index index.php;
+# Configurar Nginx - Adiciona apenas as rotas /vslogs/ ao servidor existente
+cat > /etc/nginx/sites-available/vslogs << 'EOF'
+# VsLogs API - Adicionar ao bloco server existente ou incluir este arquivo
+# Include no nginx.conf ou no site principal: include /etc/nginx/sites-available/vslogs;
 
+# Para usar como include no server block existente:
+# Adicione: include /etc/nginx/sites-available/vslogs;
+
+# Ou copie este conteúdo dentro do seu server block:
+
+# VsLogs Dashboard
+location /vslogs {
+    alias /var/www/vslogs-api/api;
+    try_files /dashboard.html =404;
+}
+
+# VsLogs API
+location /vslogs/api {
+    alias /var/www/vslogs-api/api/api;
+    
+    # CORS
     add_header 'Access-Control-Allow-Origin' '*' always;
     add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
     add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
+    
+    if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type';
+        return 204;
     }
-
-    location /dashboard {
-        try_files /dashboard.html =404;
-    }
-
+    
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php-vslogs.sock;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
     }
+}
 
-    location ~ \.(db|sqlite)$ { deny all; }
-    location ~ /\. { deny all; }
+# Bloquear acesso ao banco de dados
+location ~ /vslogs/.*\.(db|sqlite)$ { 
+    deny all; 
 }
 EOF
 
-ln -sf /etc/nginx/sites-available/vslogs-api /etc/nginx/sites-enabled/
+# Criar arquivo de configuração separado para incluir no site existente
+cat > /etc/nginx/snippets/vslogs.conf << 'SNIPPET'
+# VsLogs Dashboard
+location /vslogs {
+    alias /var/www/vslogs-api/api;
+    try_files /dashboard.html =404;
+}
+
+# VsLogs API
+location /vslogs/api {
+    alias /var/www/vslogs-api/api/api;
+    
+    add_header 'Access-Control-Allow-Origin' '*' always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+    add_header 'Access-Control-Allow-Headers' 'Content-Type' always;
+    
+    if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'Content-Type';
+        return 204;
+    }
+    
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php-vslogs.sock;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
+    }
+}
+
+location ~ /vslogs/.*\.(db|sqlite)$ { deny all; }
+SNIPPET
+
+echo ""
+echo "📝 Configuração Nginx criada em:"
+echo "   /etc/nginx/snippets/vslogs.conf"
+echo ""
+echo "⚠️  Adicione ao seu site existente:"
+echo "   sudo nano /etc/nginx/sites-available/default"
+echo "   Dentro do bloco 'server {', adicione:"
+echo "   include snippets/vslogs.conf;"
+echo ""
 
 # Reiniciar serviços
 systemctl restart php8.2-fpm
@@ -89,7 +145,12 @@ nginx -t && systemctl reload nginx
 echo ""
 echo "✅ Deploy concluído!"
 echo ""
-echo "📊 Dashboard: http://191.235.32.212/dashboard"
-echo "🔗 API: http://191.235.32.212/api/"
+echo "📊 Dashboard: https://191-235-32-212.nip.io/vslogs"
+echo "🔗 API: https://191-235-32-212.nip.io/vslogs/api/"
 echo ""
-echo "Para SSL: sudo certbot --nginx -d 191-235-32-212.nip.io"
+echo "⚠️  IMPORTANTE: Adicione ao seu site Nginx existente:"
+echo "   sudo nano /etc/nginx/sites-available/default"
+echo "   Dentro do bloco 'server {', adicione a linha:"
+echo "   include snippets/vslogs.conf;"
+echo ""
+echo "   Depois recarregue: sudo nginx -t && sudo systemctl reload nginx"
